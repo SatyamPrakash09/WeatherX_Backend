@@ -3,6 +3,7 @@ import express from 'express'
 import cors from 'cors'
 import { getWeatherData } from './api/weatherData.js'
 import { getForecastData } from './api/forecastData.js'
+import mapRoutes from './api/map.js'
 
 configDotenv();
 
@@ -45,6 +46,8 @@ app.get('/forecast', async (req, res) => {
         res.status(500).json({ error: "Failed to fetch forecast data" });
     }
 });
+
+app.use('/api/map', mapRoutes)
 
 const PORT = 3000;
 app.listen(PORT, ()=>{
