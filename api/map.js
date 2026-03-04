@@ -21,19 +21,36 @@ router.get('/data', async (req, res) => {
   const host = req.get('host');
   const dynamicBaseUrl = `${protocol}://${host}`;
 
-  // Generate a premium grid of points around the center for visualization
+  // Fetch real weather data for the center point
+  let centerTemp = 20, centerWind = 10, centerCloud = 50, centerCondition = 'Clear';
+  try {
+    const weatherUrl = `https://api.openweathermap.org/data/2.5/weather?lat=${latitude}&lon=${longitude}&units=metric&appid=${OWM_API_KEY}`;
+    const weatherRes = await fetch(weatherUrl);
+    if (weatherRes.ok) {
+      const weatherData = await weatherRes.json();
+      centerTemp = weatherData.main?.temp ?? 20;
+      centerWind = (weatherData.wind?.speed ?? 10) * 3.6; // m/s to km/h
+      centerCloud = weatherData.clouds?.all ?? 50;
+      centerCondition = weatherData.weather?.[0]?.description ?? 'Clear';
+    }
+  } catch (e) {
+    console.warn('Weather fetch for map grid failed:', e.message);
+  }
+
+  // Build a grid of 9 points with small natural variation around the real center value
   const grid = [];
   const offset = 4; // degrees
   
   for (let dLat = -offset; dLat <= offset; dLat += offset) {
     for (let dLon = -offset; dLon <= offset; dLon += offset) {
+      const vary = (range) => (Math.random() - 0.5) * range;
       grid.push({
-        lat: latitude + dLat + (Math.random() - 0.5),
-        lon: longitude + dLon + (Math.random() - 0.5),
-        temp_c: 20 + Math.random() * 15,
-        wind_kph: Math.random() * 50,
-        cloud: Math.random() * 100,
-        condition: 'Clear'
+        lat: latitude + dLat,
+        lon: longitude + dLon,
+        temp_c: centerTemp + vary(6),
+        wind_kph: Math.max(0, centerWind + vary(10)),
+        cloud: Math.min(100, Math.max(0, centerCloud + vary(20))),
+        condition: centerCondition
       });
     }
   }
