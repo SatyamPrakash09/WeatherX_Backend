@@ -74,7 +74,7 @@ router.get('/tiles/:layer/:z/:x/:y', async (req, res) => {
   }
 
   try {
-    const tileUrl = `https://tile.openweathermap.org/map/${layer}/${z}/${x}/{y}.png?appid=${OWM_API_KEY}`;
+    const tileUrl = `https://tile.openweathermap.org/map/${layer}/${z}/${x}/${y}.png?appid=${OWM_API_KEY}`;
     const response = await fetch(tileUrl);
     
     if (!response.ok) {
